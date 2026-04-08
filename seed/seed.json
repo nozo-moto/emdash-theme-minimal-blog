@@ -1,0 +1,581 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Minimal Blog",
+		"description": "A modern, minimal blog with generous whitespace and full-width imagery",
+		"author": "EmDash"
+	},
+
+	"settings": {
+		"title": "Minimal",
+		"tagline": "Thoughts, simply told."
+	},
+
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Posts",
+			"labelSingular": "Post",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"commentsEnabled": true,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Excerpt",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"supports": ["drafts", "revisions", "search"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Categories",
+			"labelSingular": "Category",
+			"hierarchical": true,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "essays", "label": "Essays" },
+				{ "slug": "notes", "label": "Notes" },
+				{ "slug": "work", "label": "Work" }
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "design", "label": "Design" },
+				{ "slug": "technology", "label": "Technology" },
+				{ "slug": "life", "label": "Life" },
+				{ "slug": "creativity", "label": "Creativity" }
+			]
+		}
+	],
+
+	"bylines": [
+		{
+			"id": "byline-author",
+			"slug": "author",
+			"displayName": "The Author"
+		}
+	],
+
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{ "type": "custom", "label": "Posts", "url": "/posts" },
+				{ "type": "custom", "label": "About", "url": "/pages/about" }
+			]
+		}
+	],
+
+	"widgetAreas": [
+		{
+			"name": "footer",
+			"label": "Footer",
+			"description": "Widget area displayed in the site footer",
+			"widgets": [
+				{
+					"type": "content",
+					"title": "About",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A space for long-form writing about design, technology, and the things in between."
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+
+	"content": {
+		"pages": [
+			{
+				"id": "about",
+				"slug": "about",
+				"status": "published",
+				"data": {
+					"title": "About",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This is a space for writing. No schedule, no newsletter funnel, no engagement metrics. Just thoughts, written down carefully, shared openly."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The design is intentionally quiet. Good writing doesn't need decoration. It needs space to breathe and a reader willing to slow down."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Built with Astro and EmDash."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "post-1",
+				"slug": "on-slowing-down",
+				"status": "published",
+				"data": {
+					"title": "On Slowing Down",
+					"excerpt": "The internet moves fast. Writing doesn't have to.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&h=800&fit=crop",
+							"alt": "Misty mountain landscape at dawn",
+							"filename": "on-slowing-down.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "There's a rhythm to the internet that rewards speed. Post first, think later. Ship fast, iterate faster. The metrics favor frequency over depth, and volume over craft."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "I've been trying to do the opposite. Write slower. Let ideas sit for a week before publishing. Read the draft out loud, delete the parts that sound like they're performing. What's left is usually shorter and better."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "The cost of speed" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Speed has a cost that's hard to see. It's in the blog post that almost says something interesting but doesn't quite get there. It's in the tweet thread that could have been a paragraph. It's in the hot take that ages poorly because it was never meant to age at all."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The things I remember reading — the essays that changed how I think — were not written quickly. They were written by people who sat with an idea long enough to see it clearly, then found the words to make someone else see it too."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["essays"],
+					"tag": ["life"]
+				}
+			},
+			{
+				"id": "post-2",
+				"slug": "interfaces-that-disappear",
+				"status": "published",
+				"data": {
+					"title": "Interfaces That Disappear",
+					"excerpt": "The best design is the one you stop noticing.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1400&h=800&fit=crop",
+							"alt": "Abstract gradient of soft colors",
+							"filename": "interfaces-disappear.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "There's a particular quality in the best interfaces that's hard to name. It's not beauty, exactly, though they're often beautiful. It's not simplicity, though they're usually simple. It's something more like transparency — the interface becomes invisible, and you're left alone with the thing you came to do."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A good reading app disappears into the text. A good camera app disappears into the moment. A good writing tool disappears into the words. The design serves the content by getting out of its way."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "Designing for absence" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This is counterintuitive for designers. We're trained to add — another element, another interaction, another clever detail. But the most powerful design decisions are often subtractive. What can be removed without losing meaning? What's there for the designer's benefit rather than the user's?"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The answer is usually more than you'd expect. Borders that could be whitespace. Labels that could be implied. Animations that entertain without informing. Each removal makes what remains more visible, more present, more useful."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["essays"],
+					"tag": ["design"]
+				}
+			},
+			{
+				"id": "post-3",
+				"slug": "tools-shape-thinking",
+				"status": "published",
+				"data": {
+					"title": "Tools Shape Thinking",
+					"excerpt": "We choose our tools, and then our tools choose the thoughts we're able to have.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1456574808786-d2ba7a6aa654?w=1400&h=800&fit=crop",
+							"alt": "Minimalist workspace with a single notebook",
+							"filename": "tools-shape-thinking.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Every tool comes with an opinion about how work should be done. A spreadsheet thinks in rows and columns. A slide deck thinks in sequential points. A whiteboard thinks in spatial relationships. Choose the tool, and you've already narrowed the range of possible outcomes."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This isn't necessarily a problem. Constraints can be productive. But it's worth being aware of. When every conversation happens in a chat thread, you get a certain kind of thinking. When it happens in a document, you get another. Neither is wrong, but they're different in ways that matter."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "The medium is the message" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "McLuhan was right, and it applies to software tools as much as broadcast media. The structure of the tool shapes the structure of the thought. If your project management tool thinks in two-week sprints, so will your team. If your design tool thinks in screens, so will your product."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The most interesting work often comes from using a tool in a way it wasn't designed for, or from switching tools mid-process to break out of one way of thinking and into another."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["essays"],
+					"tag": ["technology", "creativity"]
+				}
+			},
+			{
+				"id": "post-4",
+				"slug": "in-praise-of-boredom",
+				"status": "published",
+				"data": {
+					"title": "In Praise of Boredom",
+					"excerpt": "The most interesting ideas arrive when you stop looking for them.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=1400&h=800&fit=crop",
+							"alt": "Empty road stretching toward distant mountains",
+							"filename": "in-praise-of-boredom.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "We've engineered boredom out of modern life with remarkable efficiency. Every idle moment is an opportunity to check something, scroll something, listen to something. The gaps in the day that used to be filled with nothing are now filled with content."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "But boredom had a purpose. It was the space where unexpected connections formed, where the mind wandered into territory it wouldn't have visited on purpose. The shower thought, the walk-to-the-bus idea, the staring-out-the-window insight — these all came from boredom."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "Making space for nothing" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "I've started deliberately building pockets of boredom into my day. A walk without headphones. A commute without a podcast. Ten minutes of sitting with coffee and no screen. It feels wasteful at first, almost irresponsible. But the quality of thinking that emerges from these gaps is noticeably different."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Not every thought that arrives in boredom is good. Most aren't. But they're different. They come from a part of the mind that doesn't get airtime when you're always consuming. And occasionally, one of them turns out to be exactly the thing you needed."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["notes"],
+					"tag": ["life", "creativity"]
+				}
+			},
+			{
+				"id": "post-5",
+				"slug": "less-but-better",
+				"status": "published",
+				"data": {
+					"title": "Less, but Better",
+					"excerpt": "Dieter Rams said it decades ago. We're still learning what it means.",
+					"featured_image": {
+						"$media": {
+							"url": "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=1400&h=800&fit=crop",
+							"alt": "Clean white architectural lines",
+							"filename": "less-but-better.jpg"
+						}
+					},
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Weniger, aber besser. Less, but better. It was Dieter Rams' guiding principle, and it's become something of a cliche in design circles. Everyone quotes it. Few actually practice it. Because less is hard. Less means saying no to good ideas. Less means finishing with fewer features than you started with."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The 'but better' part is what makes it difficult. It's not about having less for the sake of minimalism. It's about having less because what remains is so good that nothing else is needed. That requires taste, restraint, and the courage to stop before you feel done."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "Applied minimalism" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "In software, this means fewer features that work perfectly rather than many that work mostly. In writing, it means shorter pieces that say something rather than longer ones that say everything. In life, it means fewer commitments given full attention rather than many given fragments."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The principle scales. A product, a paragraph, a daily schedule — all benefit from the discipline of removal. The question isn't 'what else could we add?' It's 'what can we remove without losing the essence?'"
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["essays"],
+					"tag": ["design"]
+				}
+			},
+			{
+				"id": "post-6",
+				"slug": "working-with-your-hands",
+				"status": "published",
+				"data": {
+					"title": "Working with Your Hands",
+					"excerpt": "After years at a screen, there's something radical about making something physical.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "I spent last weekend building a bookshelf. Not from a kit — from lumber, a saw, sandpaper, and wood glue. It took all of Saturday and most of Sunday. The edges aren't perfectly square. One shelf has a slight bow. It's the most satisfying thing I've made in months."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "There's something that happens when you work with physical materials that doesn't happen on a screen. The feedback is immediate and honest. Wood doesn't have an undo button. A crooked cut stays crooked. You learn to measure twice not because someone told you to, but because you ruined a board and had to start over."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [{ "_type": "span", "text": "The analog counterweight" }]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "For those of us who spend our working hours in abstract digital space, physical making serves as a counterweight. It reconnects you with the basic satisfaction of transforming raw material into something useful. No deployment pipeline. No code review. Just a thing that exists in the world because you made it."
+								}
+							]
+						}
+					]
+				},
+				"bylines": [{ "byline": "byline-author" }],
+				"taxonomies": {
+					"category": ["notes"],
+					"tag": ["life"]
+				}
+			}
+		]
+	}
+}

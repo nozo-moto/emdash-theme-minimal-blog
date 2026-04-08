@@ -1,0 +1,436 @@
+---
+import {
+	getEmDashEntry,
+	getEmDashCollection,
+	getEntryTerms,
+	getSeoMeta,
+} from "emdash";
+import { Image, PortableText, Comments, CommentForm } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getReadingTime } from "../../utils/reading-time";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+	return Astro.redirect("/404");
+}
+
+const { entry: post, cacheHint } = await getEmDashEntry("posts", slug);
+
+if (!post) {
+	return Astro.redirect("/404");
+}
+
+Astro.cache.set(cacheHint);
+
+function getImageUrl(img: unknown): string | undefined {
+	if (!img || typeof img !== "object") return undefined;
+	const image = img as Record<string, unknown>;
+	if (typeof image.src === "string" && image.src) {
+		return image.src.startsWith("http")
+			? image.src
+			: `${Astro.url.origin}${image.src}`;
+	}
+	const meta = image.meta as Record<string, unknown> | undefined;
+	const storageKey =
+		(typeof meta?.storageKey === "string" ? meta.storageKey : undefined) ||
+		(typeof image.id === "string" ? image.id : undefined);
+	if (storageKey) {
+		return `${Astro.url.origin}/_emdash/api/media/file/${storageKey}`;
+	}
+	return undefined;
+}
+const featuredImageUrl = getImageUrl(post.data.featured_image);
+
+const seo = getSeoMeta(post, {
+	siteTitle: "Minimal",
+	siteUrl: Astro.url.origin,
+	path: `/posts/${slug}`,
+	defaultOgImage: featuredImageUrl,
+});
+
+const tags = await getEntryTerms("posts", post.data.id, "tag");
+const bylines = post.data.bylines ?? [];
+const readingTime = getReadingTime(post.data.content);
+
+const { entries: recentPosts } = await getEmDashCollection("posts", {
+	orderBy: { published_at: "desc" },
+	limit: 4,
+});
+const otherPosts = recentPosts.filter((p) => p.id !== post.id).slice(0, 2);
+
+const otherPostsWithTags = await Promise.all(
+	otherPosts.map(async (p) => {
+		const postTags = await getEntryTerms("posts", p.data.id, "tag");
+		return { post: p, tags: postTags };
+	})
+);
+
+const publishDate =
+	post.data.publishedAt?.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	}) ?? null;
+---
+
+<Base
+	title={seo.title}
+	description={seo.description}
+	image={seo.ogImage}
+	canonical={seo.canonical}
+	robots={seo.robots}
+	type="article"
+	publishedTime={post.data.publishedAt?.toISOString() ?? null}
+	modifiedTime={post.data.updatedAt.toISOString()}
+	content={{ collection: "posts", id: post.data.id, slug }}
+>
+	<article class="article">
+		{/* Hero image — full width */}
+		{
+			post.data.featured_image && (
+				<div class="article-hero" {...post.edit.featured_image}>
+					<Image image={post.data.featured_image} />
+				</div>
+			)
+		}
+
+		{/* Article content — single column, centered */}
+		<div class="article-container">
+			<header class="article-header">
+				<div class="article-meta">
+					{
+						bylines.length > 0 && (
+							<>
+								<span class="article-byline">
+									{bylines.map((credit, i) => (
+										<>
+											{i > 0 && ", "}
+											{credit.byline.displayName}
+										</>
+									))}
+								</span>
+								<span class="meta-sep">/</span>
+							</>
+						)
+					}
+					{publishDate && <time>{publishDate}</time>}
+					<span class="meta-sep">/</span>
+					<span>{readingTime} min read</span>
+				</div>
+				<h1 class="article-title" {...post.edit.title}>{post.data.title}</h1>
+				{
+					post.data.excerpt && (
+						<p class="article-excerpt">{post.data.excerpt}</p>
+					)
+				}
+			</header>
+
+			<div class="article-content">
+				<PortableText value={post.data.content} />
+			</div>
+
+			{
+				tags.length > 0 && (
+					<div class="article-tags">
+						{tags.map((t) => (
+							<a href={`/tag/${t.slug}`} class="article-tag">
+								{t.label}
+							</a>
+						))}
+					</div>
+				)
+			}
+
+			<div class="article-comments">
+				<Comments collection="posts" contentId={post.data.id} threaded />
+				<CommentForm collection="posts" contentId={post.data.id} />
+			</div>
+		</div>
+	</article>
+
+	{
+		otherPostsWithTags.length > 0 && (
+			<section class="more-posts">
+				<div class="more-inner">
+					<h2 class="more-title">Continue reading</h2>
+					<div class="more-grid">
+						{otherPostsWithTags.map(({ post: p, tags: postTags }) => (
+							<PostCard
+								title={p.data.title}
+								excerpt={p.data.excerpt}
+								featuredImage={p.data.featured_image}
+								href={`/posts/${p.id}`}
+								date={p.data.publishedAt ?? undefined}
+								readingTime={getReadingTime(p.data.content)}
+								tags={postTags.map((t) => ({
+									slug: t.slug,
+									label: t.label,
+								}))}
+							/>
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	.article {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+	}
+
+	/* Hero — wide image */
+	.article-hero {
+		margin: var(--spacing-8) var(--spacing-6);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+
+	.article-hero img {
+		width: 100%;
+		height: auto;
+		max-height: 560px;
+		object-fit: cover;
+	}
+
+	/* Content — centered single column */
+	.article-container {
+		max-width: var(--content-width);
+		margin: 0 auto;
+		padding: var(--spacing-12) var(--spacing-6) var(--spacing-20);
+	}
+
+	.article-header {
+		margin-bottom: var(--spacing-12);
+	}
+
+	.article-meta {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.article-byline {
+		color: var(--color-text-secondary);
+	}
+
+	.meta-sep {
+		color: var(--color-border);
+	}
+
+	.article-title {
+		font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
+		font-weight: 700;
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-tight);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.article-excerpt {
+		font-size: var(--font-size-xl);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+	}
+
+	/* Article body typography */
+	.article-content {
+		font-size: var(--font-size-lg);
+		line-height: 1.8;
+	}
+
+	.article-content :global(p) {
+		margin-bottom: 1.6em;
+	}
+
+	.article-content :global(h2) {
+		font-size: var(--font-size-2xl);
+		margin-top: 2.5em;
+		margin-bottom: 0.75em;
+		scroll-margin-top: calc(var(--nav-height) + var(--spacing-4));
+	}
+
+	.article-content :global(h3) {
+		font-size: var(--font-size-xl);
+		margin-top: 2em;
+		margin-bottom: 0.5em;
+		scroll-margin-top: calc(var(--nav-height) + var(--spacing-4));
+	}
+
+	.article-content :global(blockquote) {
+		margin: 2em 0;
+		padding: var(--spacing-6) var(--spacing-8);
+		border-left: 2px solid var(--color-text);
+		color: var(--color-text-secondary);
+		font-style: italic;
+		font-size: var(--font-size-xl);
+		line-height: var(--leading-relaxed);
+	}
+
+	.article-content :global(pre) {
+		margin: 2em 0;
+		padding: var(--spacing-6);
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		overflow-x: auto;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		line-height: 1.7;
+	}
+
+	.article-content :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		background: var(--color-surface);
+		padding: 0.2em 0.4em;
+		border-radius: var(--radius);
+	}
+
+	.article-content :global(pre code) {
+		background: none;
+		padding: 0;
+	}
+
+	.article-content :global(ul),
+	.article-content :global(ol) {
+		margin-bottom: 1.6em;
+		padding-left: 1.5em;
+	}
+
+	.article-content :global(li) {
+		margin-bottom: 0.5em;
+	}
+
+	.article-content :global(img) {
+		margin: 2.5em 0;
+		border-radius: var(--radius-lg);
+	}
+
+	.article-content :global(hr) {
+		margin: 3em 0;
+		border: none;
+		text-align: center;
+		color: var(--color-muted);
+	}
+
+	.article-content :global(hr)::after {
+		content: "* * *";
+		letter-spacing: 0.5em;
+	}
+
+	.article-content :global(a) {
+		color: var(--color-text);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		text-decoration-thickness: 1px;
+		text-decoration-color: var(--color-border);
+		transition: text-decoration-color var(--transition-fast);
+	}
+
+	.article-content :global(a:hover) {
+		text-decoration-color: var(--color-text);
+	}
+
+	/* Tags below content */
+	.article-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		margin-top: var(--spacing-12);
+		padding-top: var(--spacing-8);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.article-tag {
+		display: inline-block;
+		padding: var(--tag-padding-y) var(--spacing-3);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		text-decoration: none;
+		transition: color var(--transition-fast), border-color var(--transition-fast);
+	}
+
+	.article-tag:hover {
+		color: var(--color-text);
+		border-color: var(--color-text);
+	}
+
+	/* Comments */
+	.article-comments {
+		margin-top: var(--spacing-16);
+		padding-top: var(--spacing-10);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.article-comments :global(.ec-comments-heading) {
+		font-size: var(--font-size-xl);
+		font-weight: 600;
+		margin-bottom: var(--spacing-8);
+	}
+
+	.article-comments :global(.ec-comment-form-field input),
+	.article-comments :global(.ec-comment-form-field textarea) {
+		background: var(--color-surface) !important;
+		border-color: var(--color-border) !important;
+		color: var(--color-text) !important;
+	}
+
+	.article-comments :global(.ec-comment-form-submit) {
+		background: var(--color-text) !important;
+		color: var(--color-bg) !important;
+	}
+
+	/* More posts */
+	.more-posts {
+		border-top: 1px solid var(--color-border-subtle);
+		padding: var(--spacing-20) 0;
+	}
+
+	.more-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: 0 var(--spacing-6);
+	}
+
+	.more-title {
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-10);
+	}
+
+	.more-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--spacing-10);
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.article-hero {
+			margin: var(--spacing-4);
+			border-radius: var(--radius);
+		}
+
+		.article-container {
+			padding: var(--spacing-8) var(--spacing-4) var(--spacing-16);
+		}
+
+		.more-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

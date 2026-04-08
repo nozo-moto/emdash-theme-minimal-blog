@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# EmDash runtime
+data.db
+data.db-shm
+data.db-wal
+uploads/
+.astro/
+
+# Lock files
+package-lock.json
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store

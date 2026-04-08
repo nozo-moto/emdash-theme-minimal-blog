@@ -1,0 +1,323 @@
+---
+import { getEmDashCollection, getEntryTerms } from "emdash";
+import { Image } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { getReadingTime } from "../utils/reading-time";
+
+const { entries: posts, cacheHint } = await getEmDashCollection("posts");
+
+Astro.cache.set(cacheHint);
+
+const sortedPosts = posts.toSorted((a, b) => {
+	const dateA = a.data.publishedAt?.getTime() ?? 0;
+	const dateB = b.data.publishedAt?.getTime() ?? 0;
+	return dateB - dateA;
+});
+
+const featuredPost = sortedPosts.find((p) => p.data.featured_image);
+const featuredIndex = featuredPost ? sortedPosts.indexOf(featuredPost) : -1;
+const gridPosts = sortedPosts.filter((_, i) => i !== featuredIndex).slice(0, 6);
+
+const totalShown = (featuredPost ? 1 : 0) + gridPosts.length;
+const hasMorePosts = sortedPosts.length > totalShown;
+
+let featuredTags: Array<{ slug: string; label: string }> = [];
+if (featuredPost) {
+	const tags = await getEntryTerms("posts", featuredPost.data.id, "tag");
+	featuredTags = tags.map((t) => ({ slug: t.slug, label: t.label }));
+}
+
+const gridPostsWithTags = await Promise.all(
+	gridPosts.map(async (post) => {
+		const tags = await getEntryTerms("posts", post.data.id, "tag");
+		return {
+			post,
+			tags: tags.map((t) => ({ slug: t.slug, label: t.label })),
+		};
+	})
+);
+
+function formatDate(date: Date | null | undefined) {
+	if (!date) return null;
+	return date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+---
+
+<Base title="Home" description="Thoughts, simply told.">
+	{
+		posts.length === 0 ? (
+			<section class="empty-state">
+				<h2>No posts yet</h2>
+				<p>Create your first post in the admin panel.</p>
+				<a href="/_emdash/admin/content/posts/new" class="btn">
+					Create a post
+				</a>
+			</section>
+		) : (
+			<div class="home">
+				{/* Hero — Featured post */}
+				{featuredPost && (
+					<section class="hero">
+						<a href={`/posts/${featuredPost.id}`} class="hero-image-link">
+							<div class="hero-image">
+								<Image image={featuredPost.data.featured_image} />
+							</div>
+						</a>
+						<div class="hero-content">
+							<div class="hero-meta">
+								{formatDate(featuredPost.data.publishedAt) && (
+									<time>{formatDate(featuredPost.data.publishedAt)}</time>
+								)}
+								<span class="meta-sep">/</span>
+								<span>{getReadingTime(featuredPost.data.content)} min read</span>
+							</div>
+							<a href={`/posts/${featuredPost.id}`} class="hero-title-link">
+								<h1 class="hero-title">{featuredPost.data.title}</h1>
+							</a>
+							{featuredPost.data.excerpt && (
+								<p class="hero-excerpt">{featuredPost.data.excerpt}</p>
+							)}
+							{featuredTags.length > 0 && (
+								<div class="hero-tags">
+									{featuredTags.map((tag) => (
+										<a href={`/tag/${tag.slug}`} class="hero-tag">
+											{tag.label}
+										</a>
+									))}
+								</div>
+							)}
+						</div>
+					</section>
+				)}
+
+				{/* Grid — Recent posts */}
+				{gridPostsWithTags.length > 0 && (
+					<section class="posts-section">
+						<header class="section-header">
+							<h2 class="section-title">Recent</h2>
+							{hasMorePosts && (
+								<a href="/posts" class="section-link">
+									View all &rarr;
+								</a>
+							)}
+						</header>
+						<div class="posts-grid">
+							{gridPostsWithTags.map(({ post, tags }) => (
+								<PostCard
+									title={post.data.title ?? "Untitled"}
+									excerpt={post.data.excerpt}
+									featuredImage={post.data.featured_image}
+									href={`/posts/${post.id}`}
+									date={post.data.publishedAt ?? undefined}
+									readingTime={getReadingTime(post.data.content)}
+									tags={tags}
+								/>
+							))}
+						</div>
+					</section>
+				)}
+			</div>
+		)
+	}
+</Base>
+
+<style>
+	.home {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-12) var(--spacing-6) var(--spacing-20);
+	}
+
+	/* Hero */
+	.hero {
+		margin-bottom: var(--spacing-20);
+	}
+
+	.hero-image-link {
+		display: block;
+		text-decoration: none;
+	}
+
+	.hero-image {
+		overflow: hidden;
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		margin-bottom: var(--spacing-8);
+	}
+
+	.hero-image img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 7;
+		object-fit: cover;
+		transition: transform 0.6s ease;
+	}
+
+	.hero-image-link:hover .hero-image img,
+	.hero:has(.hero-title-link:hover) .hero-image img {
+		transform: scale(1.02);
+	}
+
+	.hero-content {
+		max-width: var(--content-width);
+	}
+
+	.hero-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wide);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.meta-sep {
+		color: var(--color-border);
+	}
+
+	.hero-title-link {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.hero-title {
+		font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
+		font-weight: 700;
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-tight);
+		margin-bottom: var(--spacing-4);
+		transition: color var(--transition-base);
+	}
+
+	.hero-title-link:hover .hero-title,
+	.hero:has(.hero-image-link:hover) .hero-title {
+		color: var(--color-muted);
+	}
+
+	.hero-excerpt {
+		font-size: var(--font-size-xl);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		max-width: 560px;
+	}
+
+	.hero-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		margin-top: var(--spacing-5);
+	}
+
+	.hero-tag {
+		display: inline-block;
+		padding: var(--tag-padding-y) var(--spacing-3);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		text-decoration: none;
+		transition: color var(--transition-fast), border-color var(--transition-fast);
+	}
+
+	.hero-tag:hover {
+		color: var(--color-text);
+		border-color: var(--color-text);
+	}
+
+	/* Section header */
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: var(--spacing-10);
+		padding-bottom: var(--spacing-4);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.section-title {
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.section-link {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		text-decoration: none;
+		transition: color var(--transition-fast);
+	}
+
+	.section-link:hover {
+		color: var(--color-text);
+	}
+
+	/* Posts grid */
+	.posts-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--spacing-16) var(--spacing-10);
+	}
+
+	/* Empty state */
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--spacing-3);
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.empty-state h2 {
+		font-size: var(--font-size-2xl);
+		font-weight: 600;
+	}
+
+	.empty-state p {
+		color: var(--color-muted);
+	}
+
+	.btn {
+		display: inline-block;
+		margin-top: var(--spacing-4);
+		padding: var(--spacing-3) var(--spacing-6);
+		background: var(--color-text);
+		color: var(--color-bg);
+		text-decoration: none;
+		border-radius: var(--radius);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		transition: opacity var(--transition-fast);
+	}
+
+	.btn:hover {
+		opacity: 0.8;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.home {
+			padding: var(--spacing-6) var(--spacing-4) var(--spacing-16);
+		}
+
+		.hero-image img {
+			aspect-ratio: 16 / 9;
+		}
+
+		.posts-grid {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-12);
+		}
+	}
+</style>
