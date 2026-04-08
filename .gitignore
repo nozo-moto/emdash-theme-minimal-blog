@@ -11,9 +11,6 @@ data.db-wal
 uploads/
 .astro/
 
-# Lock files
-package-lock.json
-
 # Environment
 .env
 .env.*
